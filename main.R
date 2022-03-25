@@ -99,26 +99,25 @@ denasymlp <- function(x,del.l, del.u){
 
 #plot(x1,x2) 
 ############################
-
 k1 = function(del.l , del.u){
-  k = (del.l**3)/((del.l + del.u)*(2*del.l -1 )*(1 + del.l - del.u))
+  k = (del.l^3)/((del.l + del.u)*(2*del.l -1 )*(1 + del.l - del.u))
   return (k)
 }
 #  k1(4,3)
 
 k2  = function(del.l,del.u){
-  k = ((del.l - 1)**3)/((2*del.l -1)*(del.l -del.u -1)*(2 - del.l -del.u))
+  k = ((del.l - 1)^3)/((2*del.l -1)*(del.l -del.u -1)*(2 - del.l -del.u))
   return (k)
 }
 # k2(4,3)
 
 k3 = function(del.l, del.u){
-  k= (del.u**3)/((del.l + del.u)*(2*del.u -1)*(del.l - del.u -1))
+  k= (del.u^3)/((del.l + del.u)*(2*del.u -1)*(del.l - del.u -1))
   return (k)
 }
 #k3(2,3)
 k4 = function(del.l, del.u){
-  k = ((del.u -1)**3)/((2*del.u -1)*(1 + del.l - del.u)*(2- del.l - del.u))  # last breacket might be (2-del.u-del.u) as per paper
+  k = ((del.u -1)^3)/((2*del.u -1)*(1 + del.l - del.u)*(2- del.l - del.u))  # last breacket might be (2-del.u-del.u) as per paper
   return (k)
 }
 
@@ -296,8 +295,6 @@ del.l = 0.3
 del.u = 0.4
 rho = 0.5
 
-W <- rmvnorm(100, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
-
 qasymlp <- function(p, del.l, del.u){
   cutoff <- del.l / (del.l + del.u)
   part1 <- (del.l + del.u) / (del.l * as.numeric(p <= cutoff) + del.u * as.numeric(p > cutoff))
@@ -306,11 +303,19 @@ qasymlp <- function(p, del.l, del.u){
   out <- part3 * (log(part1) + part2)
   out}
 
-R <- qasymlp(runif(100), del.l, del.u)
+#---------------
+
+R <- qasymlp(runif(1e4), del.l, del.u)
+
+Z <- rmvnorm(1e4, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
+
+U <- pnorm(Z)
+
+W <- qasymlp(U, 1 - del.l, 1 - del.u)
 
 X <- W + R
 
-X <- apply(X, 2, rank) / 101
+X <- apply(X, 2, rank) / dim(X)[1]
 
 #-----------------
 
