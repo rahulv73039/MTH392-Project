@@ -208,7 +208,7 @@ pnormasympl <- function(x, del.l, del.u){
 #  }
 #logit
 logit= function(x, del.l,del.u,t){
-  val = pnormasympl(log(x) - log(1-x),del.l,del.u,t)
+  val = abs(t - pnormasympl(log(x) - log(1-x),del.l,del.u))
   return (val)
 }
 
@@ -225,7 +225,7 @@ logit= function(x, del.l,del.u,t){
 #margin.inv  with logit transformation applied
 margin.inv = function(t,del.l ,del.u){
   solve = function(t,del.l,del.u){
-    x = optimize(logit , c(0,1),tol = 1e-6, del.l = del.l, del.u = del.u, t = t)$minimum
+    x = optimize(logit , c(0.00001,0.9999),tol = 1e-6, del.l = del.l, del.u = del.u, t = t)$minimum
     return (log(x) - log(1-x))
   }
   return (sapply(t, solve, del.l = del.l ,del.u = del.u))
@@ -245,8 +245,10 @@ margin.inv = function(t,del.l ,del.u){
 # }
 # root
 #integrand 
-inte = function(r,x1 ,x2,rho,del.l,del.u){ 
-  solve = function(r,x1 ,x2,rho,del.l,del.u){
+inte = function(x,x1 ,x2,rho,del.l,del.u){ 
+  # passing log(x) -log(1-x) for logit transformation in integration to change limit of integration to (0,1 )
+  solve = function(x ,x1 ,x2,rho,del.l,del.u){
+    r <- log(x)-log(1-x)
     d1 <- dasymlp(x1 - r , 1 - del.l, 1 - del.u)
     q1 <- ifelse(d1 < 0.5, qnorm(d1), -qnorm(1 - d1))
     
@@ -257,9 +259,10 @@ inte = function(r,x1 ,x2,rho,del.l,del.u){
     q <- c(q1, q2)
     gcop =  pmvnorm(mean = c(0,0),corr  = matrix(c(1,rho,rho,1), nrow =2),lower = -Inf,upper = q)
     igrand = gcop[1]*denasymlp(r,del.l ,del.u)
+    igrand = igrand/(x*(1-x)) # this comes due to substitution of r using logit transformation
     return (igrand)
   }
-  return(sapply(r,solve,x1 =x1 ,x2 =x2, rho = rho, del.l =del.l ,del.u =del.u))
+  return(sapply(x,solve,x1 =x1 ,x2 =x2, rho = rho, del.l =del.l ,del.u =del.u))
 }
 
 #pmvnorm(mean = c(0,0),corr  = matrix(c(1,0.3,0.3,1), nrow =2),lower = -Inf,upper = c(1,2))
@@ -270,7 +273,7 @@ C.t.t  = function(t1,t2,rho,del.l,del.u) {
   x2 = margin.inv(t2,del.l , del.u)
   #Integration gives  Joint Distribution F(x1,x2)
   solve = function(x1,x2,rho,del.l,del.u){
-    return (integrate(inte, lower = -Inf, upper = Inf, x1 =x1 ,x2 =x2, rho = rho,del.l = del.l ,del.u =del.u)$value)
+    return (integrate(inte, lower = 0.00001, upper = 0.9999, x1 =x1 ,x2 =x2, rho = rho,del.l = del.l ,del.u =del.u)$value)
   }
   return (mapply(solve, x1,x2, rho =rho , del.l= del.l ,del.u =del.u))
 }
@@ -305,9 +308,9 @@ qasymlp <- function(p, del.l, del.u){
 
 #---------------
 
-R <- qasymlp(runif(1e4), del.l, del.u)
+R <- qasymlp(runif(100), del.l, del.u)
 
-Z <- rmvnorm(1e4, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
+Z <- rmvnorm(100, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
 
 U <- pnorm(Z)
 
@@ -322,7 +325,8 @@ X <- apply(X, 2, rank) / dim(X)[1]
 # q <- cbind(qnorm(dasymlp(x1 - r , 1 - del.l, 1 - del.u)),
 #            qnorm(dasymlp(x2 - r , 1 - del.l, 1 - del.u)))
 
-den.integrand <- function(r, x1, x2, rho, del.l, del.u){
+den.integrand <- function(x, x1, x2, rho, del.l, del.u){ 
+  r <-  log(x) - log(1 - x)  #logit transformation
   d1 <- dasymlp(x1 - r , 1 - del.l, 1 - del.u)
   q1 <- ifelse(d1 < 0.5, qnorm(d1), -qnorm(1 - d1))
   
@@ -335,11 +339,12 @@ den.integrand <- function(r, x1, x2, rho, del.l, del.u){
   out <- out * denasymlp(x1 - r, 1 - del.l, 1 - del.u) *
     denasymlp(x2 - r, 1 - del.l, 1 - del.u) * denasymlp(r, del.l, del.u)
   out <- out / (dnorm(dasymlp(x1 - r, 1 - del.l, 1 - del.u)) *
-                  dnorm(dasymlp(x2 - r, 1- del.l, 1 - del.u)))
+                  dnorm(dasymlp(x2 - r, 1- del.l, 1 - del.u))) 
+  out <- out/(x*(1-x))
   out}
 
 d.joint <- function(x1, x2, rho, del.l, del.u){
-  integrate(den.integrand, lower = max(x1, x2) - 10, upper = min(x1, x2) + 10,
+  integrate(den.integrand, lower = 0.00001, upper = 0.9999,
             x1 = x1, x2 = x2, rho = rho, del.l = del.l, del.u = del.u)$value
 }
 
