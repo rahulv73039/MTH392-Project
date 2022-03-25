@@ -155,75 +155,25 @@ k12 = function(del.l, del.u){
   return (out)
 }
 ##########marginal used to find inv#######################
-marginal  = function(x, del.l , del.u,t){
-  solve = function(x, del.l , del.u,t){
-    if(del.l == 0.5  && del.u == 0.5){
-      if(x<=0){
-        val =  abs(log(t) - log(0.5) - log((1-x)) - (2*x))
-      }
-      else {
-        val = abs(log(1-t)  - log(0.5)  - log((1+x))  + (2*x))
-      }
-      return (val)
-    }
-    # exp(1)
-    # else 
-    if(del.l == 0.5){
-      if(x<=0){ 
-        val =  abs(log(t)-   (2*x)  - log((k5(del.l,del.u)*x)  -  (k6(del.l,del.u))))
-      }
-      else { 
-        if(del.u > 0.5){
-          val = abs(log(1-t)  + (x/del.u) - log(k7(del.l,del.u) + k8(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u)))) ) )
-        }
-        else {
-          val =  abs(log(1-t) + (x/(1-del.u)) - log(k7(del.l,del.u)*exp(x*((2*del.u -1)/(del.u*(1-del.u))))  + k8(del.l,del.u)) )
-        }
-      
-      }
-      return (val)
-    }
-    if(del.u == 0.5){
-      if(x<=0){
-        if(del.l >0.5){
-        val = abs(log(t) - (x/del.l)  - log(k9(del.l,del.u) + k10(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l))))) )
-        }
-        else {
-          val = abs(log(t) - (x/(1-del.l))  - log(k9(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) + k10(del.l,del.u)) )
-        }
-      }
-      else {
-        val  = abs(log(1-t) + (2*x) - log(-1*(k11(del.l,del.u)*x + k12(del.l,del.u))) )
-      }
-      return (val)
-    }
-    # else 
-    if(x<=0){
-      if(del.l >0.5){
-        val = abs(log(t) - (x/del.l) - log(k1(del.l,del.u) - k2(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l)))) )  ) 
-      }
-      else {
-        val = abs(log(t) - (x/(1-del.l)) - log(k1(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) - k2(del.l,del.u))  )
-      }
-    }
-    else {
-      if(del.u >0.5){
-        val= abs(log(1-t) + (x/del.u) - log(-1*k3(del.l,del.u) + k4(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u))))) )
-      }
-      else {
-        val = abs(log(1-t) + (x/(1-del.u)) - log(-1*k3(del.l,del.u)*exp(x*((2*del.u-1)/(del.u*(1-del.u)))) + k4(del.l,del.u))  )
-      }
-    }
-    return (val)
+pnormasympl <- function(x, del.l, del.u){
+  if((del.l == 0.5) & (del.u == 0.5)){
+    val <- 0.5 * (1 - x) * exp(2 * x) * as.numeric(x <= 0) + 
+      (1 - 0.5 * (1 + x) * exp(-2 * x)) * as.numeric(x > 0)
+  }else if((del.l == 0.5) & (del.u != 0.5)){
+    val <- (k5(del.l, del.u) * x * exp(2 * x) - k6(del.l, del.u) * exp(2 * x)) * as.numeric(x <= 0) + 
+      (1 - k7(del.l,del.u) * exp(-x / del.u) - k8(del.l, del.u) * exp(x / (del.u - 1))) * as.numeric(x > 0)
+  }else if((del.l != 0.5) & (del.u == 0.5)){
+    val <- (k9(del.l,del.u) * exp(x / del.l) + k10(del.l,del.u) * exp(x / (1 - del.l))) * as.numeric(x <= 0) + 
+      (1 + k11(del.l,del.u) * x * exp(-2 * x) + k12(del.l, del.u) * exp(-2 * x)) * as.numeric(x > 0)
+  }else{
+    val <- (k1(del.l, del.u) * exp(x / del.l) - k2(del.l, del.u) * exp(x / (1 - del.l))) * as.numeric(x <= 0) + 
+      (1 + k3(del.l, del.u) * exp(-x / del.u) - k4(del.l, del.u) * exp(x / (del.u-1))) * as.numeric(x > 0)
   }
-  
-  return (sapply(x,solve , del.l = del.l, del.u = del.u,t =t))
-}
-
+  return(val)}
 #x =seq(-4 , 100  ,by = 0.1)
-#plot(x, marginal(x))
+#plot(x, pnormasympl(x))
 
-#it is derivative of marginal
+#it is derivative of pnormasympl
 #  f.dash  = function(x){
 
 
@@ -259,7 +209,7 @@ marginal  = function(x, del.l , del.u,t){
 #  }
 #logit
 logit= function(x, del.l,del.u,t){
-  val = marginal(log(x) - log(1-x),del.l,del.u,t)
+  val = pnormasympl(log(x) - log(1-x),del.l,del.u,t)
   return (val)
 }
 
@@ -267,7 +217,7 @@ logit= function(x, del.l,del.u,t){
 # was giving error
 #margin.inv = function(t,del.l ,del.u ){
 # solve = function(t,del.l,del.u){
-#    x = optimize(function(x, del.l , del.u,t){exp(marginal(x, del.l , del.u,t))/(1+exp(marginal(x, del.l , del.u,t)))} , c(0,1),tol = 1e-3, del.l = del.l, del.u = del.u, t = t)$minimum
+#    x = optimize(function(x, del.l , del.u,t){exp(pnormasympl(x, del.l , del.u,t))/(1+exp(pnormasympl(x, del.l , del.u,t)))} , c(0,1),tol = 1e-3, del.l = del.l, del.u = del.u, t = t)$minimum
 #    return (x)
 #  }
 #  return (sapply(t, solve, del.l = del.l ,del.u = del.u))
@@ -290,7 +240,7 @@ margin.inv = function(t,del.l ,del.u){
 # root = 13
 # while(tol > epsilon && iter <1000){
 #     iter = iter +1
-#     curr = root - marginal(root , 0.2, 0.3)/f.dash(root)
+#     curr = root - pnormasympl(root , 0.2, 0.3)/f.dash(root)
 #     tol = abs(root - curr)
 #     root = curr
 # }
