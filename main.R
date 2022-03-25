@@ -159,10 +159,10 @@ marginal  = function(x, del.l , del.u,t){
   solve = function(x, del.l , del.u,t){
     if(del.l == 0.5  && del.u == 0.5){
       if(x<=0){
-        val =  abs(t - 0.5*(1-x)*exp(2*x))
+        val =  abs(log(t) - log(0.5) - log((1-x)) - (2*x))
       }
       else {
-        val = abs(t-   1+ 0.5*(1+x)*exp(-2*x))
+        val = abs(log(1-t)  - log(0.5)  - log((1+x))  + (2*x))
       }
       return (val)
     }
@@ -170,28 +170,49 @@ marginal  = function(x, del.l , del.u,t){
     # else 
     if(del.l == 0.5){
       if(x<=0){ 
-        val =  abs(t-   (k5(del.l,del.u)*x*exp(2*x))  +  (k6(del.l,del.u)*exp(2*x)))
+        val =  abs(log(t)-   (2*x)  - log((k5(del.l,del.u)*x)  -  (k6(del.l,del.u))))
       }
-      else {
-        val =  abs(t -  1 +  (k7(del.l,del.u)*exp(-x/del.u)) + (k8(del.l,del.u)*exp(x/(del.u-1))) )
+      else { 
+        if(del.u > 0.5){
+          val = abs(log(1-t)  + (x/del.u) - log(k7(del.l,del.u) + k8(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u)))) ) )
+        }
+        else {
+          val =  abs(log(1-t) + (x/(1-del.u)) - log(k7(del.l,del.u)*exp(x*((2*del.u -1)/(del.u*(1-del.u))))  + k8(del.l,del.u)) )
+        }
+      
       }
       return (val)
     }
     if(del.u == 0.5){
       if(x<=0){
-        val = abs(t - (k9(del.l,del.u)*exp(x/del.l)) - (k10(del.l,del.u)*exp(x/(1-del.l))) )
+        if(del.l >0.5){
+        val = abs(log(t) - (x/del.l)  - log(k9(del.l,del.u) + k10(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l))))) )
+        }
+        else {
+          val = abs(log(t) - (x/(1-del.l))  - log(k9(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) + k10(del.l,del.u)) )
+        }
       }
       else {
-        val  = abs(t - 1 - (k11(del.l,del.u)*x*exp(-2*x)) - (k12(del.l,del.u)*exp(-2*x)) )
+        val  = abs(log(1-t) + (2*x) - log(-1*(k11(del.l,del.u)*x + k12(del.l,del.u))) )
       }
       return (val)
     }
     # else 
     if(x<=0){
-      val =  abs(t- (k1(del.l,del.u)*exp(x/del.l)) + (k2(del.l,del.u)*exp(x/(1-del.l))))
+      if(del.l >0.5){
+        val = abs(log(t) - (x/del.l) - log(k1(del.l,del.u) - k2(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l)))) )  ) 
+      }
+      else {
+        val = abs(log(t) - (x/(1-del.l)) - log(k1(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) - k2(del.l,del.u))  )
+      }
     }
     else {
-      val =  abs(t-  1 - (k3(del.l,del.u)*exp(-x/del.u)) + (k4(del.l,del.u)*exp(x/(del.u-1))) )
+      if(del.u >0.5){
+        val= abs(log(1-t) + (x/del.u) - log(-1*k3(del.l,del.u) + k4(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u))))) )
+      }
+      else {
+        val = abs(log(1-t) + (x/(1-del.u)) - log(-1*k3(del.l,del.u)*exp(x*((2*del.u-1)/(del.u*(1-del.u)))) + k4(del.l,del.u))  )
+      }
     }
     return (val)
   }
@@ -236,12 +257,27 @@ marginal  = function(x, del.l , del.u,t){
 #     }
 #     return (val)
 #  }
+#logit
+logit= function(x, del.l,del.u,t){
+  val = marginal(log(x) - log(1-x),del.l,del.u,t)
+  return (val)
+}
 
 #use this or newton raphson algorithm
-margin.inv = function(t,del.l ,del.u ){
+# was giving error
+#margin.inv = function(t,del.l ,del.u ){
+# solve = function(t,del.l,del.u){
+#    x = optimize(function(x, del.l , del.u,t){exp(marginal(x, del.l , del.u,t))/(1+exp(marginal(x, del.l , del.u,t)))} , c(0,1),tol = 1e-3, del.l = del.l, del.u = del.u, t = t)$minimum
+#    return (x)
+#  }
+#  return (sapply(t, solve, del.l = del.l ,del.u = del.u))
+#}
+############
+#margin.inv  with logit transformation applied
+margin.inv = function(t,del.l ,del.u){
   solve = function(t,del.l,del.u){
-    x = optimize(marginal , c(-20,20),tol = 1e-3, del.l = del.l, del.u = del.u, t = t)$minimum
-    return (x)
+    x = optimize(logit , c(0,1),tol = 1e-6, del.l = del.l, del.u = del.u, t = t)$minimum
+    return (log(x) - log(1-x))
   }
   return (sapply(t, solve, del.l = del.l ,del.u = del.u))
 }
@@ -294,21 +330,21 @@ C.t.t  = function(t1,t2,rho,del.l,del.u) {
 
 #likelihood to estimate parameters
 #1. empirical distribution to calc (u1,u2)
-x1 = c(3,4,3,5,3,4,2)
-x2 = c(3,5,5,6,7,5,4)
-pdat1 <- function(x,x1){
-  return(sum(x1 <= x)/(length(x1) +1))
-}
-pdat2 <- function(x,x2){
-  return(sum(x2 <= x)/(length(x2) +1))
-}
+#x1 = c(3,4,3,5,3,4,2)
+#x2 = c(3,5,5,6,7,5,4)
+#pdat1 <- function(x,x1){
+#  return(sum(x1 <= x)/(length(x1) +1))
+#}
+#pdat2 <- function(x,x2){
+#  return(sum(x2 <= x)/(length(x2) +1))
+#}
 #2. c(u1,u2) 
 
 #-----------------------
 
-del.l = 0.1
-del.u = 0.1
-rho = 0.2
+del.l = 0.3
+del.u = 0.4
+rho = 0.5
 
 W <- rmvnorm(100, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
 
@@ -410,14 +446,15 @@ c.u1.u2 <- function(u1, u2, rho, del.l, del.u){
 neg.log <- function(params){
   sum(sapply(1:nrow(X), function(i){
     - log(c.u1.u2(X[i, 1], X[i, 2], #pdat1(x1[i],x1),pdat2(x2[i],x2),
-                  (exp(params[3])-1)/(exp(params[3]) +1),
-                  1/(1+exp(-params[1])),
-                  1/(1+exp(-params[2]))))}))}
+                  (exp(params[1])-1)/(exp(params[1]) +1),
+                  1/(1+exp(-params[2])),
+                  1/(1+exp(-params[3])) ))}))}
 
-optim(c(0,0,0), neg.log)
+optim(c(1.098612,-0.8472979,-0.4054651), neg.log)
 
 p = c(0,0,0)
 p = nlm(neg.log, p)$estimate
+
 rho = p[1]
 del.l = p[2]
 del.u = p[3]
@@ -441,25 +478,28 @@ plot(t, x.u, type = 'l')
 #plotting C.t.t 
 install.packages("ggplot2")
 library(ggplot2)
+library(viridis)
 loc = expand.grid(x=t, y=t)
 
 fill = mapply( C.t.t,loc[1], loc[2], rho = 0.5, del.l = 0.1 , del.u = 0.9)
 p1 = ggplot() + geom_tile(aes(x = loc[ , 1], y = loc[ , 2], fill = fill),
                           width = 0.06, height = 0.06) +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1) +  scale_fill_viridis()
 
 
 fill = mapply( C.t.t,loc[1], loc[2], rho = 0.5, del.l = 0.1 , del.u = 0.1)
 p2 = ggplot() + geom_tile(aes(x = loc[ , 1], y = loc[ , 2], fill = fill),
                           width = 0.06, height = 0.06) +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1) +  scale_fill_viridis()
 
 fill = mapply( C.t.t,loc[1], loc[2], rho = 0.5, del.l = 0.5 , del.u = 0.5)
 p3 = ggplot() + geom_tile(aes(x = loc[ , 1], y = loc[ , 2], fill = fill),
                           width = 0.06, height = 0.06) +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1) +  scale_fill_viridis()
 
 fill = mapply( C.t.t,loc[1], loc[2], rho = 0.5, del.l = 0.9 , del.u = 0.9)
 p4 = ggplot() + geom_tile(aes(x = loc[ , 1], y = loc[ , 2], fill = fill),
                           width = 0.06, height = 0.06) +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1)  +  scale_fill_viridis()
+
+
