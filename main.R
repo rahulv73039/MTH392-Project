@@ -169,6 +169,74 @@ pnormasympl <- function(x, del.l, del.u){
       (1 + k3(del.l, del.u) * exp(-x / del.u) - k4(del.l, del.u) * exp(x / (del.u-1))) * as.numeric(x > 0)
   }
   return(val)}
+
+#pnormasympl1 = function(x, del.l , del.u,t){
+#  solve = function(x, del.l , del.u,t){
+#    if(del.l == 0.5  && del.u == 0.5){
+#      if(x<=0){
+#        val =  abs(log(t) - log(0.5) - log((1-x)) - (2*x))
+#      }
+#      else {
+#        val = abs(log(1-t)  - log(0.5)  - log((1+x))  + (2*x))
+#     }
+#      return (val)
+#    }
+    # exp(1)
+    # else 
+#    if(del.l == 0.5){
+#      if(x<=0){ 
+#        val =  abs(log(t)-   (2*x)  - log((k5(del.l,del.u)*x)  -  (k6(del.l,del.u))))
+#      }
+#     else { 
+#        if(del.u > 0.5){
+#          val = abs(log(1-t)  + (x/del.u) - log(k7(del.l,del.u) + k8(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u)))) ) )
+#        }
+#        else {
+#          val =  abs(log(1-t) + (x/(1-del.u)) - log(k7(del.l,del.u)*exp(x*((2*del.u -1)/(del.u*(1-del.u))))  + k8(del.l,del.u)) )
+#        }
+#      
+#      }
+#      return (val)
+#    }
+#    if(del.u == 0.5){
+#      if(x<=0){
+#        if(del.l >0.5){
+#          val = abs(log(t) - (x/del.l)  - log(k9(del.l,del.u) + k10(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l))))) )
+#        }
+#        else {
+#          val = abs(log(t) - (x/(1-del.l))  - log(k9(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) + k10(del.l,del.u)) )
+#        }
+#      }
+#      else {
+#        val  = abs(log(1-t) + (2*x) - log(-1*(k11(del.l,del.u)*x + k12(del.l,del.u))) )
+#      }
+#      return (val)
+#    }
+  # else 
+#    if(x<=0){
+#      if(del.l >0.5){
+#        val = abs(log(t) - (x/del.l) - log(k1(del.l,del.u) - k2(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l)))) )  ) 
+#      }
+#      else {
+#        val = abs(log(t) - (x/(1-del.l)) - log(k1(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) - k2(del.l,del.u))  )
+#      }
+#    }
+#    else {
+#      if(del.u >0.5){
+#        val= abs(log(1-t) + (x/del.u) - log(-1*k3(del.l,del.u) + k4(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u))))) )
+#      }
+#      else {
+#        val = abs(log(1-t) + (x/(1-del.u)) - log(-1*k3(del.l,del.u)*exp(x*((2*del.u-1)/(del.u*(1-del.u)))) + k4(del.l,del.u))  )
+#      }
+#  }
+#    return (val)
+#  }
+
+#  return (sapply(x,solve , del.l = del.l, del.u = del.u,t =t))
+#}
+
+
+
 #x =seq(-4 , 100  ,by = 0.1)
 #plot(x, pnormasympl(x))
 
@@ -208,7 +276,7 @@ pnormasympl <- function(x, del.l, del.u){
 #  }
 #logit
 logit= function(x, del.l,del.u,t){
-  val = abs(t - pnormasympl(log(x) - log(1-x),del.l,del.u))
+  val = abs(t- pnormasympl(log(x) - log(1-x),del.l,del.u))
   return (val)
 }
 
@@ -295,7 +363,7 @@ C.t.t  = function(t1,t2,rho,del.l,del.u) {
 #-----------------------
 
 del.l = 0.3
-del.u = 0.4
+del.u = 0.3
 rho = 0.5
 
 qasymlp <- function(p, del.l, del.u){
