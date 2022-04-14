@@ -1,0 +1,144 @@
+---
+title: "Indigo and SpiceJet"
+author: "Arnab Hazra"
+date: "4/7/2022"
+output: html_document
+---
+
+```{r, echo=TRUE, fig.width=8, fig.height=5}
+
+rm(list = ls())
+
+mydir <- "C:/Users/Arnab Hazra/Desktop/0_RahulVerma/Meeting_April12/data_analysis_dailyavg"
+setwd(mydir)
+
+library(readr)
+
+Indigo <- read_csv("INGL Historical Data.csv")
+
+SpiceJet <- read_csv("SPJT Historical Data.csv")
+
+Indigo <- Indigo[-c(497:507), ]
+SpiceJet <- SpiceJet[-c(498:508), ]
+
+years.Indigo <- as.vector(sapply(Indigo$Date, function(x){
+  as.numeric(strsplit(x, split = " ")[[1]][3])}))
+
+years.SpiceJet <- as.vector(sapply(SpiceJet$Date, function(x){
+  as.numeric(strsplit(x, split = " ")[[1]][3])}))
+
+days.Indigo <- as.vector(sapply(Indigo$Date, function(x){
+  as.numeric(strsplit(strsplit(x, split = ", ")[[1]][1], split = " ")[[1]][2])}))
+
+days.SpiceJet <- as.vector(sapply(SpiceJet$Date, function(x){
+  as.numeric(strsplit(strsplit(x, split = ", ")[[1]][1], split = " ")[[1]][2])}))
+
+months.Indigo <- as.vector(sapply(Indigo$Date, function(x){strsplit(x, split = " ")[[1]][1]}))
+
+months.SpiceJet <- as.vector(sapply(SpiceJet$Date, function(x){strsplit(x, split = " ")[[1]][1]}))
+
+months.Indigo <- as.vector(sapply(months.Indigo, function(x){which(month.abb == x)}))
+
+months.SpiceJet <- as.vector(sapply(months.SpiceJet, function(x){which(month.abb == x)}))
+
+identify.issue <- which(sapply(1:497, function(i){
+  sum((months.Indigo - months.SpiceJet[-i])^2) +
+    sum((years.Indigo - years.SpiceJet[-i])^2) +
+    sum((days.Indigo - days.SpiceJet[-i])^2)}) == 0)
+
+SpiceJet <- SpiceJet[-identify.issue, ]
+
+years <- years.Indigo
+
+months <- months.Indigo
+
+days <- days.Indigo
+
+nt <- length(Indigo$Date)
+
+logreturn.Indigo <- log(Indigo$Price[-1]) - log(Indigo$Price[-nt])
+logreturn.SpiceJet <- log(SpiceJet$Price[-1]) - log(SpiceJet$Price[-nt])
+
+par(mfrow = c(1, 2))
+acf(logreturn.Indigo)
+acf(logreturn.SpiceJet)
+
+par(mfrow = c(1, 2))
+pacf(logreturn.Indigo)
+pacf(logreturn.SpiceJet)
+
+# pretty independent
+
+library(lubridate)
+
+dates <- mdy(Indigo$Date)
+
+df <- data.frame(date = dates[-1], 
+                 Indigo = logreturn.Indigo,
+                 SpiceJet = logreturn.SpiceJet)
+
+library(ggplot2)
+
+p <- ggplot(df) + geom_line(aes(x = date, y = Indigo), size = 1) + 
+  xlab(NULL) + ylab("Log-return") + 
+  ggtitle("Daily average log-return of Indigo airlines") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
+
+print(p)
+
+p <- ggplot(df) + geom_line(aes(x = date, y = SpiceJet), size = 1) + 
+  xlab(NULL) + ylab("Log-return") + 
+  ggtitle("Daily average log-return of SpiceJet airlines") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20))
+
+print(p)
+
+p <- ggplot(df) + geom_point(aes(x = Indigo, y = SpiceJet))
+print(p)
+
+Indigo.rank <- (rank(df$Indigo) + 0.5) / (length(df$Indigo) + 1)
+SpiceJet.rank <- (rank(df$SpiceJet) + 0.5) / (length(df$SpiceJet) + 1)
+
+df2 <- data.frame(Indigo.rank = Indigo.rank,
+                  SpiceJet.rank = SpiceJet.rank)
+
+p <- ggplot(df2) + geom_point(aes(x = Indigo.rank, y = SpiceJet.rank))
+print(p)
+
+# level = 0.95
+
+empchi.upper.upper <- mean((Indigo.rank > 0.95) & (SpiceJet.rank > 0.95)) / 0.05
+empchi.upper.lower <- mean((Indigo.rank > 0.95) & (SpiceJet.rank < 0.05)) / 0.05
+empchi.lower.upper <- mean((Indigo.rank < 0.05) & (SpiceJet.rank > 0.95)) / 0.05
+empchi.lower.lower <- mean((Indigo.rank < 0.05) & (SpiceJet.rank < 0.05)) / 0.05
+
+table95 <- as.matrix(c(empchi.upper.upper, empchi.upper.lower, 
+                        empchi.lower.upper, empchi.lower.lower))
+rownames(table95) <- c("Upper-Upper", "Upper-Lower", "Lower-Upper", "Lower-Lower")
+table95
+library(kableExtra)
+kable(table95)
+
+# level = 0.98
+
+empchi.upper.upper <- mean((Indigo.rank > 0.98) & (SpiceJet.rank > 0.98)) / 0.02
+empchi.upper.lower <- mean((Indigo.rank > 0.98) & (SpiceJet.rank < 0.02)) / 0.02
+empchi.lower.upper <- mean((Indigo.rank < 0.02) & (SpiceJet.rank > 0.98)) / 0.02
+empchi.lower.lower <- mean((Indigo.rank < 0.02) & (SpiceJet.rank < 0.02)) / 0.02
+
+table98 <- as.matrix(c(empchi.upper.upper, empchi.upper.lower, 
+                        empchi.lower.upper, empchi.lower.lower))
+rownames(table98) <- c("Upper-Upper", "Upper-Lower", "Lower-Upper", "Lower-Lower")
+table98
+library(kableExtra)
+kable(table98)
+
+```
+
+Seems like there is AI in the lower tail and AD in the upper tail. Thus, $\delta_L < 0.5$ and $\delta_U > 0.5$ is expected.

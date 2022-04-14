@@ -134,7 +134,7 @@ k7 = function(del.l, del.u){
   return (out)
 }
 k8 = function(del.l, del.u){
-  out  =  (4*((del.u -1)**3))/((del.u-3)*(del.u-3)*(2*del.u -1))
+  out  =  (4*((del.u -1)**3))/((2*del.u-3)*(2*del.u-3)*(2*del.u -1))
   return (out)
 }
 k9 = function(del.l, del.u){
@@ -170,70 +170,69 @@ pnormasympl <- function(x, del.l, del.u){
   }
   return(val)}
 
-#pnormasympl1 = function(x, del.l , del.u,t){
-#  solve = function(x, del.l , del.u,t){
-#    if(del.l == 0.5  && del.u == 0.5){
-#      if(x<=0){
-#        val =  abs(log(t) - log(0.5) - log((1-x)) - (2*x))
-#      }
-#      else {
-#        val = abs(log(1-t)  - log(0.5)  - log((1+x))  + (2*x))
-#     }
-#      return (val)
-#    }
-    # exp(1)
-    # else 
-#    if(del.l == 0.5){
-#      if(x<=0){ 
-#        val =  abs(log(t)-   (2*x)  - log((k5(del.l,del.u)*x)  -  (k6(del.l,del.u))))
-#      }
-#     else { 
-#        if(del.u > 0.5){
-#          val = abs(log(1-t)  + (x/del.u) - log(k7(del.l,del.u) + k8(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u)))) ) )
-#        }
-#        else {
-#          val =  abs(log(1-t) + (x/(1-del.u)) - log(k7(del.l,del.u)*exp(x*((2*del.u -1)/(del.u*(1-del.u))))  + k8(del.l,del.u)) )
-#        }
-#      
-#      }
-#      return (val)
-#    }
-#    if(del.u == 0.5){
-#      if(x<=0){
-#        if(del.l >0.5){
-#          val = abs(log(t) - (x/del.l)  - log(k9(del.l,del.u) + k10(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l))))) )
-#        }
-#        else {
-#          val = abs(log(t) - (x/(1-del.l))  - log(k9(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) + k10(del.l,del.u)) )
-#        }
-#      }
-#      else {
-#        val  = abs(log(1-t) + (2*x) - log(-1*(k11(del.l,del.u)*x + k12(del.l,del.u))) )
-#      }
-#      return (val)
-#    }
-  # else 
-#    if(x<=0){
-#      if(del.l >0.5){
-#        val = abs(log(t) - (x/del.l) - log(k1(del.l,del.u) - k2(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l)))) )  ) 
-#      }
-#      else {
-#        val = abs(log(t) - (x/(1-del.l)) - log(k1(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) - k2(del.l,del.u))  )
-#      }
-#    }
-#    else {
-#      if(del.u >0.5){
-#        val= abs(log(1-t) + (x/del.u) - log(-1*k3(del.l,del.u) + k4(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u))))) )
-#      }
-#      else {
-#        val = abs(log(1-t) + (x/(1-del.u)) - log(-1*k3(del.l,del.u)*exp(x*((2*del.u-1)/(del.u*(1-del.u)))) + k4(del.l,del.u))  )
-#      }
-#  }
-#    return (val)
-#  }
+pnormasympl1 = function(x, del.l , del.u,t){
+ solve = function(x, del.l , del.u,t){
+   if(del.l == 0.5  && del.u == 0.5){
+     if(x<=0){
+       val =  abs(log(t) - log(0.5) - log((1-x)) - (2*x))
+     }
+     else {
+       val = abs(log(1-t)  - log(0.5)  - log((1+x))  + (2*x))
+    }
+     return (val)
+   }
+#exp(1)
+#else
+   if(del.l == 0.5){
+     if(x<=0){
+       val =  abs(log(t)-   (2*x)  - log((k5(del.l,del.u)*x)  -  (k6(del.l,del.u))))
+     }
+    else {
+       if(del.u > 0.5){
+         val = abs(log(1-t)  + (x/del.u) - log(k7(del.l,del.u) + k8(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u)))) ) )
+       }
+       else {
+         val =  abs(log(1-t) + (x/(1-del.u)) - log(k7(del.l,del.u)*exp(x*((2*del.u -1)/(del.u*(1-del.u))))  + k8(del.l,del.u)) )
+       }
 
-#  return (sapply(x,solve , del.l = del.l, del.u = del.u,t =t))
-#}
+     }
+     return (val)
+   }
+   if(del.u == 0.5){
+     if(x<=0){
+       if(del.l >0.5){
+         val = abs(log(t) - (x/del.l)  - log(k9(del.l,del.u) + k10(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l))))) )
+       }
+       else {
+         val = abs(log(t) - (x/(1-del.l))  - log(k9(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) + k10(del.l,del.u)) )
+       }
+     }
+     else {
+       val  = abs(log(1-t) + (2*x) - log(-1*(k11(del.l,del.u)*x + k12(del.l,del.u))) )
+     }
+     return (val)
+   }
+#else
+   if(x<=0){
+     if(del.l >0.5){
+       val = abs(log(t) - (x/del.l) - log(k1(del.l,del.u) - k2(del.l,del.u)*exp(x*((2*del.l -1)/(del.l*(1-del.l)))) )  )
+     }
+     else {
+       val = abs(log(t) - (x/(1-del.l)) - log(k1(del.l,del.u)*exp(x*((1-2*del.l)/(del.l*(1-del.l)))) - k2(del.l,del.u))  )
+     }
+   }
+   else {
+     if(del.u >0.5){
+       val= abs(log(1-t) + (x/del.u) - log(-1*k3(del.l,del.u) + k4(del.l,del.u)*exp(x*((1-2*del.u)/(del.u*(1-del.u))))) )
+     }
+     else {
+       val = abs(log(1-t) + (x/(1-del.u)) - log(-1*k3(del.l,del.u)*exp(x*((2*del.u-1)/(del.u*(1-del.u)))) + k4(del.l,del.u))  )
+     }
+ }
+   return (val)
+ }
+ return (sapply(x,solve , del.l = del.l, del.u = del.u,t =t))
+}
 
 
 
@@ -276,13 +275,13 @@ pnormasympl <- function(x, del.l, del.u){
 #  }
 #logit
 logit= function(x, del.l,del.u,t){
-  val = abs(t- pnormasympl(log(x) - log(1-x),del.l,del.u))
+  val =  abs(t- pnormasympl(log(x) - log(1-x),del.l,del.u))
   return (val)
 }
 
 #use this or newton raphson algorithm
 # was giving error
-#margin.inv = function(t,del.l ,del.u ){
+#qasympl.sum = function(t,del.l ,del.u ){
 # solve = function(t,del.l,del.u){
 #    x = optimize(function(x, del.l , del.u,t){exp(pnormasympl(x, del.l , del.u,t))/(1+exp(pnormasympl(x, del.l , del.u,t)))} , c(0,1),tol = 1e-3, del.l = del.l, del.u = del.u, t = t)$minimum
 #    return (x)
@@ -290,15 +289,15 @@ logit= function(x, del.l,del.u,t){
 #  return (sapply(t, solve, del.l = del.l ,del.u = del.u))
 #}
 ############
-#margin.inv  with logit transformation applied
-margin.inv = function(t,del.l ,del.u){
+#qasympl.sum  with logit transformation applied
+qasympl.sum = function(t,del.l ,del.u){
   solve = function(t,del.l,del.u){
-    x = optimize(logit , c(0.00001,0.9999),tol = 1e-6, del.l = del.l, del.u = del.u, t = t)$minimum
+    x = optimize(logit , c(0,1),tol = 1e-6, del.l = del.l, del.u = del.u, t = t)$minimum
     return (log(x) - log(1-x))
   }
   return (sapply(t, solve, del.l = del.l ,del.u = del.u))
 }
-#margin.inv(0.5, 0.2,0.3)
+#qasympl.sum(0.5, 0.2,0.3)
 #but it is giving wrong ans for interval (1e-6, 1e6) what to do????????????????
 #newton raphson
 # tol = 1000
@@ -337,11 +336,11 @@ inte = function(x,x1 ,x2,rho,del.l,del.u){
 
 # integration
 C.t.t  = function(t1,t2,rho,del.l,del.u) {
-  x1 = margin.inv(t1,del.l, del.u)
-  x2 = margin.inv(t2,del.l , del.u)
+  x1 = qasympl.sum(t1,del.l, del.u)
+  x2 = qasympl.sum(t2,del.l , del.u)
   #Integration gives  Joint Distribution F(x1,x2)
   solve = function(x1,x2,rho,del.l,del.u){
-    return (integrate(inte, lower = 0.00001, upper = 0.9999, x1 =x1 ,x2 =x2, rho = rho,del.l = del.l ,del.u =del.u)$value)
+    return (integrate(inte, lower = 0, upper = 1, x1 =x1 ,x2 =x2, rho = rho,del.l = del.l ,del.u =del.u)$value)
   }
   return (mapply(solve, x1,x2, rho =rho , del.l= del.l ,del.u =del.u))
 }
@@ -376,9 +375,9 @@ qasymlp <- function(p, del.l, del.u){
 
 #---------------
 
-R <- qasymlp(runif(100), del.l, del.u)
+R <- qasymlp(runif(200), del.l, del.u)
 
-Z <- rmvnorm(100, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
+Z <- rmvnorm(200, mean = c(0,0), sigma = matrix(c(1, rho, rho, 1), nrow = 2))
 
 U <- pnorm(Z)
 
@@ -386,7 +385,8 @@ W <- qasymlp(U, 1 - del.l, 1 - del.u)
 
 X <- W + R
 
-X <- apply(X, 2, rank) / dim(X)[1]
+ X <- apply(X, 2, rank) / (dim(X)[1]+1)
+#X <- cbind(pnormasympl(X[,1],del.l,del.u),pnormasympl(X[,2],del.l,del.u)) 
 
 #-----------------
 
@@ -412,7 +412,7 @@ den.integrand <- function(x, x1, x2, rho, del.l, del.u){
   out}
 
 d.joint <- function(x1, x2, rho, del.l, del.u){
-  integrate(den.integrand, lower = 0.00001, upper = 0.9999,
+  integrate(den.integrand, lower = 0, upper = 1,
             x1 = x1, x2 = x2, rho = rho, del.l = del.l, del.u = del.u)$value
 }
 
@@ -464,8 +464,8 @@ d.marginal = function(x,del.l,del.u){
 }
 
 c.u1.u2 <- function(u1, u2, rho, del.l, del.u){
-  x.1 <- margin.inv(u1, del.l, del.u)
-  x.2 <- margin.inv(u2, del.l, del.u)
+  x.1 <- qasympl.sum(u1, del.l, del.u)
+  x.2 <- qasympl.sum(u2, del.l, del.u)
   out <- d.joint(x.1, x.2,rho,del.l , del.u) / 
     (d.marginal(x.1, del.l, del.u) * d.marginal(x.2, del.l, del.u))
   out}
@@ -478,14 +478,18 @@ neg.log <- function(params){
                   1/(1+exp(-params[2])),
                   1/(1+exp(-params[3])) ))}))}
 
-optim(c(1.098612,-0.8472979,-0.4054651), neg.log)
+ out <- optim(c(1.098612,-0.8472979,-0.8472979), neg.log,  hessian = TRUE, control = list(maxit = 1000))
+ 
+ z <- NULL 
+ 
+ z$nllh <- out$value
+ z$conv <- out$convergence
+ z$mle <- out$par
+ z$cov <- solve(out$hessian)
+ z$se <- sqrt(diag(z$cov))
 
-p = c(0,0,0)
-p = nlm(neg.log, p)$estimate
+# optim(c(0,0,0), neg.log)
 
-rho = p[1]
-del.l = p[2]
-del.u = p[3]
 
 
 #estimating lower tail cofficient
