@@ -1,5 +1,6 @@
 rm(list = ls())
 
+
 #---------------
 # CDF, PDF, Quantile and simulation function of Asymmetric Laplace (AL)
 
@@ -741,7 +742,7 @@ for(i in 10:(n-10)){
   
   
   init <- c(transform$logit(0.3, 0.01, 0.99), 
-            transform$logit(0.4, 0.01, 0.99), 
+            transform$logit(0.7, 0.01, 0.99), 
             transform$logit(0.2, -0.99, 0.99))
   X <- cbind(ingl.after, spcjt.after)
 
@@ -776,24 +777,20 @@ minutes = (tock - tick) / 60
 
 
 #############################################33#whole data
-init <- c(transform$logit(0.2, 0.01, 0.99), 
-          transform$logit(0.2, 0.01, 0.99), 
+init <- c(transform$logit(0.24, 0.01, 0.99), 
+          transform$logit(0.48, 0.01, 0.99), 
           transform$logit(0.2, -0.99, 0.99))
-X <- cbind(Indigo$Price, SpiceJet$Price)
-# X <- apply(X, 2, rank) / (nrow(X) + 1) 
-emp.para <- gev.fit(X[,1])$mle 
-X[,1] <- pgev(X[,1], loc =  emp.para[1], scale = emp.para[2] , shape = emp.para[3] )
-emp.para <- gev.fit(X[,2])$mle 
-X[,2] <- pgev(X[,2], loc =  emp.para[1], scale = emp.para[2] , shape = emp.para[3] )
- 
-
-init <- c(transform$logit(0.2, 0.01, 0.99), 
-          transform$logit(0.2, 0.01, 0.99), 
-          transform$logit(0.2, -0.99, 0.99))
+X <- cbind(df$Indigo, df$SpiceJet)
+ X <- apply(X, 2, rank) / (nrow(X) + 1) 
+# emp.para <- gev.fit(X[,1])$mle 
+# X[,1] <- pgev(X[,1], loc =  emp.para[1], scale = emp.para[2] , shape = emp.para[3] )
+# emp.para <- gev.fit(X[,2])$mle 
+# X[,2] <- pgev(X[,2], loc =  emp.para[1], scale = emp.para[2] , shape = emp.para[3] )
+#  
 mles <- optim(init, neg.log, hessian = T)$par 
-mles <- c(transform$inv.logit(mles$par[1], 0.01, 0.99),
-                transform$inv.logit(mles$par[2], 0.01, 0.99),
-                transform$inv.logit(mles$par[3], -0.99, 0.99))
+mles <- c(transform$inv.logit(mles[1], 0.01, 0.99),
+                transform$inv.logit(mles[2], 0.01, 0.99),
+                transform$inv.logit(mles[3], -0.99, 0.99))
 
 likelihood.whole<- sum(sapply(1:nrow(X), function(i){
   log(c.u1.u2(X[i, 1], X[i, 2], mles[1],mles[2] , mles[3]))}))
@@ -845,6 +842,5 @@ para.store1[[reps*(j-1) + i]] <- c(transform$inv.logit(mles$par[1], 0.01, 0.99),
   minutes1[i] = (tock - tick) / 60
 }
 
-save.image(file = "my_work_space020708.RData")
 save.image(file = "my1000_work_space020708.RData")
 

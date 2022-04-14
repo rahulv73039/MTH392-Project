@@ -1,10 +1,12 @@
 rm(list = ls())
 
-
+library(lubridate)
+library(plot3D)
 library(mvtnorm)
 library(ismev)
 library(readr)
 library(evd)
+library(ggplot2)
 #---------------
 # CDF, PDF, Quantile and simulation function of Asymmetric Laplace (AL)
 
@@ -204,22 +206,22 @@ qasympl.sum <- function(p, del.l, del.u){
     return(qasympl.sum_del.l_del.u(p, del.l, del.u))
   }
 }
-
-C.t.t = function(t,del.l,del.u){
- solver <- function(t,del.l,del.u){
-  x<- qasympl.sum(t,del.l,del.u)
-  out <- pasympl.sum(x, del.l,del.u)
-  out
+C.t.t = function(t,del.l,del.u,rho){
+  solver <- function(t,del.l,del.u,rho){
+    x<- qasympl.sum(t,del.l,del.u)
+    out <- pasympl.gauss1(t,t, del.l,del.u,rho)
+    out
   }
-  sapply(t, solver , del.l = del.l ,del.u = del.u)
+  sapply(t, solver , del.l = del.l ,del.u = del.u,rho=rho)
 }
-chi.l <- function(t, del.l,del.u){
-   out = C.t.t(t,del.l,del.u)/t
-   out
+chi.l <- function(t, del.l,del.u,rho){
+  out = C.t.t(t,del.l,del.u,rho)/t
+  out
 } 
 
-chi.u <- function(t,del.l ,del.u ){
-  out <- (1 - (2*t) + C.t.t(t,del.l,del.u))/(1-t)
+chi.u <- function(t,del.l ,del.u,rho){
+  out <- (1 - (2*t) + C.t.t(t,del.l,del.u,rho))/(1-t)
+  out
 }
 qnorm.pasymlp <- function(x, del.l, del.u){
   coeff <- del.l * as.numeric(x <= 0) + del.u * as.numeric(x > 0)
@@ -230,6 +232,8 @@ qnorm.pasymlp <- function(x, del.l, del.u){
 
 
 pasympl.gauss <- function(x1, x2, del.l, del.u, rho){ 
+  
+  
   den.integrand <- function(x){
     sapply(x, function(xx){
       r <- log(xx) - log(1 - xx)
@@ -245,6 +249,20 @@ pasympl.gauss <- function(x1, x2, del.l, del.u, rho){
   
   out <- integrate(den.integrand, lower = 0, upper = 1)$value
   out}
+ 
+pasympl.gauss1 <- function(x1, x2, del.l, del.u, rho){ 
+  
+r <- qasymlp(runif(1e3),del.l, del.u)
+q1 <- qnorm.pasymlp(x1 - r, 1 - del.l, 1 - del.u)
+q2 <- qnorm.pasymlp(x2 - r, 1 - del.l, 1 - del.u)
+q <- cbind(q1, q2)  
+out = numeric(length = dim(q)[1]) 
+for(i in 1:dim(q)[1]){
+out[i] = pmvnorm(lower = rep(-Inf, 2), upper = c(q[i,1],q[i,2]), mean = c(0, 0), 
+              corr = matrix(c(1, rho, rho, 1), nrow = 2))[1] 
+}
+mean(out)
+}
 
 dasympl.gauss <- function(x1, x2, del.l, del.u, rho){
   
