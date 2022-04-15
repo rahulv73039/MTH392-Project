@@ -787,7 +787,8 @@ X <- cbind(df$Indigo, df$SpiceJet)
 # emp.para <- gev.fit(X[,2])$mle 
 # X[,2] <- pgev(X[,2], loc =  emp.para[1], scale = emp.para[2] , shape = emp.para[3] )
 #  
-mles <- optim(init, neg.log, hessian = T)$par 
+ opt = optim(init, neg.log, hessian = T)
+mles <- opt$par 
 mles <- c(transform$inv.logit(mles[1], 0.01, 0.99),
                 transform$inv.logit(mles[2], 0.01, 0.99),
                 transform$inv.logit(mles[3], -0.99, 0.99))
@@ -843,4 +844,44 @@ para.store1[[reps*(j-1) + i]] <- c(transform$inv.logit(mles$par[1], 0.01, 0.99),
 }
 
 save.image(file = "my1000_work_space020708.RData")
+#####################multiple chi
 
+x1<- seq(0.01,0.99,0.01)  
+y1 <- chi.u(x1,0.3,0.2,0.5)
+x2<- seq(0.01,0.99,0.01)  
+y2 <- chi.l(x1,0.3,0.2,0.5)
+x3<- seq(0.01,0.99,0.01)  
+y3 <- chi.u(x1,0.8,0.8,0.5)
+x4<- seq(0.01,0.99,0.01)  
+y4 <- chi.l(x1,0.3,0.2,0.5)
+x5<- seq(0.01,0.99,0.01)  
+y5 <- chi.u(x1,0.3,0.8,0.5)
+x6<- seq(0.01,0.99,0.01)  
+y6 <- chi.l(x1,0.3,0.8,0.5)
+x7<- seq(0.01,0.99,0.01)  
+y7 <- chi.u(x1,0.5,0.5,0.5)
+x8<- seq(0.01,0.99,0.01)  
+y8 <- chi.l(x1,0.5,0.5,0.5)
+
+  p0 = ggplot() + geom_line(aes(x = x1, y = y1, color = "black"), size = 1) +
+  geom_line(aes(x = x3, y = y3, color = "green"), size = 1) +
+  geom_line(aes(x = x5, y = y5, color = "red"), size = 1) +
+    geom_line(aes(x = x7, y = y7, color = "blue"), size = 1) + xlab("t") + ylab('Upper tail Coefficient') +
+    scale_color_identity(breaks = c("black","green", "red", "blue"),  guide = "legend") + theme(axis.text=element_text(size=10),
+                                                                                                axis.title=element_text(size=15),
+                                                                                                plot.title = element_text(size=15))
+p0
+ggsave(p0, filename = "random_Upper_chi.pdf", height = 6, width = 6) 
+
+p1 = ggplot() + geom_line(aes(x = x2, y = y2, color = "black"), size = 1) +
+  geom_line(aes(x = x4, y = y4, color = "green"), size = 1) +
+  geom_line(aes(x = x6, y = y6, color = "red"), size = 1) +
+  geom_line(aes(x = x8, y = y8, color = "blue"), size = 1) + xlab("t") + ylab('Lower tail Coefficient') +
+  scale_color_identity(breaks = c("black","green", "red", "blue"),  guide = "legend")  + theme(axis.text=element_text(size=10),
+                                                                                               axis.title=element_text(size=15),
+                                                                                               plot.title = element_text(size=15))
+
+p1
+ggsave(p1, filename = "random_Lower_chi.pdf", height = 6, width = 6)
+
+save.image("last.RData")

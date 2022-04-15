@@ -100,7 +100,7 @@ chi.l <- function(t, del.l,del.u,rho){
 } 
 
 chi.u <- function(t,del.l ,del.u,rho){
-  out <- (1 - (2*t) + C.t.t(t,del.l,del.u,rho))/(1-t)
+  out <- (1 - (2*t) + C.t.t(t,del.l,del.u,rho))/(1-t) 
   out
 }
 ####################################### 
@@ -108,8 +108,10 @@ rho = mles[3]
 del.l = mles[1] 
 del.u = mles[2]
 
-base <- ggplot() + xlim(0.1, 0.9)
-
-base + geom_function(fun = chi.u, args = list(del.l  = del.l, del.u = del.u,rho = rho))+ 
+p <- ggplot() + xlim(0.01, 0.99) + geom_function(fun = chi.u, args = list(del.l  = del.l, del.u = del.u,rho = rho))+ 
                # coord_cartesian(ylim = c(0, 1)) +
-  xlab("x") + ylab("Lower tail Coefficient")
+  xlab("t") + ylab("Upper tail Coefficient") + theme(axis.text=element_text(size=10),
+                                                   axis.title=element_text(size=15),
+                                                   plot.title = element_text(size=15))
+p
+ggsave(p, filename = "Upper_chi1.pdf", height = 6, width = 6)

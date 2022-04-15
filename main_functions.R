@@ -209,7 +209,7 @@ qasympl.sum <- function(p, del.l, del.u){
 C.t.t = function(t,del.l,del.u,rho){
   solver <- function(t,del.l,del.u,rho){
     x<- qasympl.sum(t,del.l,del.u)
-    out <- pasympl.gauss1(t,t, del.l,del.u,rho)
+    out <- pasympl.gauss1(x,x, del.l,del.u,rho)
     out
   }
   sapply(t, solver , del.l = del.l ,del.u = del.u,rho=rho)
